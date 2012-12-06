@@ -32,7 +32,7 @@ def lazy_import(func):
 
     The name "socket" will then be bound to a transparent object proxy which
     will import the socket module upon first use.
- 
+
     The syntax here is slightly more verbose than other lazy import recipes,
     but it's designed not to hide the actual "import" statements from tools
     like py2exe or grep.
@@ -60,7 +60,7 @@ class _LazyImport(object):
             self._esky_lazy_target = self._esky_lazy_loader()
             ns = self._esky_lazy_namespace
             if ns is not None:
-                try: 
+                try:
                     if ns[self._esky_lazy_name] is self:
                         ns[self._esky_lazy_name] = self._esky_lazy_target
                 except KeyError:
@@ -335,10 +335,27 @@ def create_zipfile(source,target,get_zipinfo=None,members=None,compress=None):
     zf = zipfile.ZipFile(target,"w",compression=compress_type)
     if members is None:
         def gen_members():
+            """
             for (dirpath,dirnames,filenames) in os.walk(source):
                 for fn in filenames:
                     yield os.path.join(dirpath,fn)[len(source)+1:]
+                        def gen_members():
+            """
+            data = []
+            for (dirpath,dirnames,filenames) in os.walk(source):
+                
+                for fn in filenames:
+                    data.append(os.path.join(dirpath,fn)[len(source)+1:])
+                for dir in dirnames:
+                    if os.path.islink(os.path.join(dirpath, dir)):
+                        data.append(os.path.join(dirpath,dir)[len(source)+1:])
+            return data
         members = gen_members()
+        """
+        for member in members:
+            print member
+        sys.exit()
+        """
     for fpath in members:
         if isinstance(fpath,zipfile.ZipInfo):
             zinfo = fpath
@@ -349,7 +366,13 @@ def create_zipfile(source,target,get_zipinfo=None,members=None,compress=None):
             else:
                 zinfo = None
             fpath = os.path.join(source,fpath)
-        if zinfo is None:
+
+        if os.path.islink(fpath):
+            zinfo = zipfile.ZipInfo(zinfo)
+            zinfo.create_system = 3
+            zinfo.external_attr = 2716663808L
+            zf.writestr(zinfo, os.readlink(fpath))
+        elif zinfo is None:
             zf.write(fpath,fpath[len(source)+1:])
         elif isinstance(zinfo,basestring):
             zf.write(fpath,zinfo)
@@ -505,5 +528,3 @@ def really_rmtree(path):
                 break
         else:
             shutil.rmtree(path)
-
-
