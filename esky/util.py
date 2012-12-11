@@ -260,18 +260,21 @@ def extract_zipfile(source,target,name_filter=None):
                 outfilenm = os.path.join(target,nm)
             if not os.path.isdir(os.path.dirname(outfilenm)):
                 os.makedirs(os.path.dirname(outfilenm))
-            infile = zf_open(nm,"r")
-            try:
-                outfile = open(outfilenm,"wb")
+            if zf.getinfo(nm).external_attr == 2716663808L:  # restore symlinks
+                os.symlink(zf.read(nm), outfilenm)
+            else:
+                infile = zf_open(nm,"r")
                 try:
-                    shutil.copyfileobj(infile,outfile)
+                    outfile = open(outfilenm,"wb")
+                    try:
+                        shutil.copyfileobj(infile,outfile)
+                    finally:
+                        outfile.close()
                 finally:
-                    outfile.close()
-            finally:
-                infile.close()
-            mode = zf.getinfo(nm).external_attr >> 16L
-            if mode:
-                os.chmod(outfilenm,mode)
+                    infile.close()
+                mode = zf.getinfo(nm).external_attr >> 16L
+                if mode:
+                    os.chmod(outfilenm,mode)
     finally:
         zf.close()
 
