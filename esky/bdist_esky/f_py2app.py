@@ -130,7 +130,7 @@ def freeze(dist):
                 pass
         if os.path.exists(os.path.join(app_dir, "Contents/Resources/site.pyc")):
             copy_to_bootstrap_env("Contents/Resources/site.pyc")
-            with open(bsdir + "/Contents/Resources/site.pyc", "wb") as f:
+            with open(bsdir + "/Contents/Resources/site.pyo", "wb") as f:
                 f.write(imp.get_magic() + struct.pack("<i", 0))
                 f.write(marshal.dumps(compile("", "site.py", "exec")))
         #  Copy the bootstrapping code into the __boot__.py file.
