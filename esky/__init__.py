@@ -659,7 +659,7 @@ class Esky(object):
         if path in manifest:
             return False
         try:
-            if os.path.isdir(fullpath):
+            if os.path.isdir(fullpath) and not os.path.islink(fullpath):
                 #  Remove paths starting with "esky" last, since we use
                 #  these to maintain state information.
                 esky_paths = []
